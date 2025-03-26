@@ -10,99 +10,179 @@ from log import setup_logging
 logger = setup_logging()
 
 
-def _validate_currencies(base_currency: str, target_currency: str, sf: Salesforce) -> dict:
+def _find_dict(list_of_dicts, key, value):
     """
-    Validate that both currencies exist in the organization and that the base currency is the corporate currency.
-        
+    In a list of dictionaries, finds the first dictionary that satisfies the key-value pair match.
+    Returns None if nothing found.
+    """
+    return next((d for d in list_of_dicts if d.get(key) == value), None)
+
+
+def get_salesforce_currencies(sf: Salesforce):
+    """
     Returns:
-        dict: Dictionary containing currency data for both currencies
-        
-    Raises:
-        ValueError: If any validation check fails
+        str: ISO code of the corporate currency
+        list: list of dicts (keys: Salesforce field names, values - field values from Salesforce)
     """
-    # Fetch all relevant currencies in one query
+    # Fetch all relevant currencies
     query = f"""
     SELECT Id, IsoCode, ConversionRate, IsCorporate
     FROM CurrencyType
-    WHERE IsoCode IN ('{base_currency}', '{target_currency}')
     """
-    currency_result = sf.query(query)
-    
-    # Create a dictionary to easily access currency data by ISO code
-    currencies = {record['IsoCode']: record for record in currency_result['records']}
-    
-    # Check if both currencies exist in the organization
-    if base_currency not in currencies:
-        raise ValueError(f"Base currency {base_currency} was not found in Salesforce.")
-    
-    if target_currency not in currencies:
-        raise ValueError(f"Target currency {target_currency} was not found in Salesforce.")
-    
-    # Check if base currency is the corporate currency
-    if not currencies[base_currency].get('IsCorporate'):
-        raise ValueError(f"Base currency {base_currency} is not the corporate currency in Salesforce.")
-    
-    return currencies
+    try:
+        query_response = sf.query(query)
+        records = query_response['records']
+    except Exception as e:
+        logger.error(f"Failed to fetch existing currencies from Salesforce.")
+        raise e
+
+    if query_response['totalSize'] <= 1:
+        raise Exception(
+            f"Missing target currencies: {query_response['totalSize']} CurrencyType record(s) found in Salesforce.")
+
+    base_currency_record = _find_dict(records, 'IsCorporate', True)
+
+    if base_currency_record is None:
+        raise Exception(f"Failed to find corporate currency in Salesforce.")
+
+    base_currency = base_currency_record.get('IsoCode')
+    target_currencies_data = [rec for rec in records if rec.get('IsCorporate') is False]
+
+    return base_currency, target_currencies_data
 
 
-def update_current_rate(base_currency: str, target_currency: str, sf: Salesforce):
+def get_salesforce_dated_conversion_rates(d: date, sf: Salesforce):
+    query = f"SELECT Id, IsoCode FROM DatedConversionRate WHERE StartDate = {d}"
+
+    try:
+        query_response = sf.query(query)
+        records = query_response['records']
+    except Exception as e:
+        logger.error(f"Failed to fetch dated conversion rates from Salesforce for date {d}.")
+        raise e
+
+    return records
+
+
+def update_current_rates(sf: Salesforce):
     """
     Update current exchange rates for a single currency.
 
     Args:
-        base_currency: ISO code of the base currency
-        target_currency: ISO code of the target currency
+        base_currency: ISO code of the base currency. Must be the corporate currency of the Salesforce org.
+        target_currencies: list of ISO code of the target currency
         sf: Salesforce client from the `simple_salesforce` package
     """
     # Validate currencies in Salesforce and get currency data
-    currencies = _validate_currencies(base_currency, target_currency, sf)
-    target_currency_id = currencies[target_currency]['Id']
+    base_currency, target_currencies_existing_records = get_salesforce_currencies(sf)
+    # Get latest exchange rate & prepare data to update CurrencyType records
 
-    # Get latest exchange rate
+    currency_types_to_update = []  # list of dicts
+    rates = {}  # keys: currency iso codes; we'll need this dictionary later
+    for rec in target_currencies_existing_records:
+        try:
+            target_currency = rec['IsoCode']
+            rate = get_exchange_rate_latest(base_currency, target_currency)
+
+            currency_types_to_update.append(
+                {'Id': rec['Id'],
+                 'ConversionRate': str(rate),
+                 }
+            )
+
+            rates[target_currency] = str(rate)
+
+        except Exception as e:
+            logger.error(f"Failed to fetch current exchange rate for {target_currency}")
+            raise e
+
+    # Update CurrencyType records
     try:
-        rate = get_exchange_rate_latest(base_currency, target_currency)
+        results = sf.bulk.CurrencyType.update(currency_types_to_update)
     except Exception as e:
-        logger.error("Failed to fetch current exchange rate")
+        logger.error(f"Failed to update CurrencyType records in Salesforce.")
         raise e
 
-    # Update the target currency with the new rate
-    try:
-        sf.CurrencyType.update(target_currency_id, {'ConversionRate': str(rate)})
-        logger.info(f"Updated CurrencyType")
-    except Exception as e:
-        logger.error(f"Failed to update CurrencyType record for currency {target_currency} in Salesforce.")
-        raise e
-    
-    # Prepare data for dated conversion rate
-    today = date.today()
+    # Check for errors
+    failed_records = [record for record in results if not record.get('success')]
+    if failed_records:
+        for rec in failed_records:
+            rec_id = rec.get('id', 'Unknown ID')
+            target_currency = _find_dict(target_currencies_existing_records, 'Id', rec_id).get('IsoCode', '<Unknown>')
 
-    record = {
-        'IsoCode': target_currency,
-        'ConversionRate': str(rate),
-        'StartDate': str(today)
-    }
+            error_message = rec.get('errors', [{}])[0].get('message', '<Unknown>')
+            logger.error(f"Failed to update CurrencyType for currency {target_currency}: '{error_message}'")
+
+        raise Exception("Failed to update some CurrencyType records.")
+    else:
+        logger.info(f"Updated {len(currency_types_to_update)} CurrencyType records.")
 
     # Create the dated conversion rate, or update it if already exists
-    try:
-        query_results = sf.query(
-        f"SELECT Id FROM DatedConversionRate WHERE IsoCode = '{target_currency}' AND StartDate = {today}"
-        )
-        if query_results['totalSize'] == 0:   # Create new record
-            sf.DatedConversionRate.create(record)
-            logger.info(f"Created new DatedConversionRate")
-        else: # Update existing record
-            record_id = query_results['records'][0]['Id']
-            sf.DatedConversionRate.update(record_id, {'ConversionRate': str(rate)})
-            logger.info(f"Updated existing DatedConversionRate")
+    today = date.today()
+    existing_dated_conversion_rates = get_salesforce_dated_conversion_rates(today, sf)
 
-    except Exception as e:
-        logger.error(f"Failed to update dated currency rate.")
-        raise e
+    # Split records into those to update and those to create
+    records_to_update = []
+    records_to_create = []
+
+    # Get the IsoCode for each record from the target_currencies_existing_records
+    for target_currency, rate in rates.items():
+        # Find if there's an existing dated conversion rate record with the same ISO code
+        existing_record = _find_dict(existing_dated_conversion_rates, 'IsoCode', target_currency)
+
+        if existing_record:
+            # If exists, prepare for update with the existing ID
+            update_record = {
+                'Id': existing_record['Id'],
+                'ConversionRate': rate
+            }
+            records_to_update.append(update_record)
+        else:
+            # If doesn't exist, prepare for creation
+            create_record = {
+                'IsoCode': target_currency,
+                'ConversionRate': rate,
+                'StartDate': str(today)
+            }
+            records_to_create.append(create_record)
+
+    # Perform bulk update if there are records to update
+    if records_to_update:
+        try:
+            update_results = sf.bulk.DatedConversionRate.update(records_to_update)
+            # Check for failed updates
+            failed_updates = [record for record in update_results if not record.get('success')]
+            if failed_updates:
+                for rec in failed_updates:
+                    rec_id = rec.get('id', 'Unknown ID')
+                    error_message = rec.get('errors', [{}])[0].get('message', '<Unknown>')
+                    logger.error(f"Failed to update DatedConversionRate with ID {rec_id}: '{error_message}'")
+                raise Exception("Failed to update some DatedConversionRate records.")
+            else:
+                logger.info(f"Updated {len(records_to_update)} DatedConversionRate records")
+        except Exception as e:
+            logger.error(f"Failed to perform bulk update of DatedConversionRate records: {str(e)}")
+            raise e
+
+    # Perform bulk insert if there are records to create
+    if records_to_create:
+        try:
+            create_results = sf.bulk.DatedConversionRate.insert(records_to_create)
+
+            # Check for failed inserts
+            failed_inserts = [record for record in create_results if not record.get('success')]
+            if failed_inserts:
+                for rec in failed_inserts:
+                    error_message = rec.get('errors', [{}])[0].get('message', '<Unknown>')
+                    logger.error(f"Failed to create DatedConversionRate: '{error_message}'")
+                raise Exception("Failed to create some DatedConversionRate records.")
+            else:
+                logger.info(f"Created {len(records_to_create)} DatedConversionRate records")
+        except Exception as e:
+            logger.error(f"Failed to perform bulk insert of DatedConversionRate records: {str(e)}")
+            raise e
 
 
 if __name__ == '__main__':
-    base_currency = 'USD'
-    target_currency = 'EUR'
-
     sf = initialize_salesforce_api_client()
-    update_current_rate(base_currency, target_currency, sf)
+    update_current_rates(sf)
