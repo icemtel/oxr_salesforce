@@ -1,0 +1,46 @@
+name: "Update Exchange Rates"
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * *'  # Run daily at 3 AM UTC
+
+jobs:
+  update_rates:
+    environment: prod
+    runs-on: ubuntu-latest
+
+    env:
+      SALESFORCE_EMAIL: ${{ secrets.SALESFORCE_EMAIL }}
+      SALESFORCE_PASSWORD: ${{ secrets.SALESFORCE_PASSWORD }}
+      SALESFORCE_TOKEN: ${{ secrets.SALESFORCE_TOKEN }}
+      OXR_APP_ID: ${{ secrets.OXR_APP_ID }}
+      
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+
+      - name: Get Python version from runtime.txt
+        id: get_python_version
+        run: |
+          # Remove "python-" prefix if present
+          PYTHON_VERSION=$(sed 's/python-//' runtime.txt)
+          echo "python_version=$PYTHON_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Set up python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ steps.get_python_version.outputs.python_version }}
+          cache: 'pip'
+          
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Update Exchange Rates
+        run: python update_exchange_rates.py
+
+      - name: Save logs
+        uses: actions/upload-artifact@v4
+        with:
+          path: "logs/*"
+          overwrite: true
+          retention-days: 30
