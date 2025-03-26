@@ -45,8 +45,10 @@ def _validate_currencies(base_currency: str, target_currency: str, sf: Salesforc
     return currencies
 
 
-def update_current_rates(base_currency: str, target_currency: str, sf: Salesforce):
+def update_current_rate(base_currency: str, target_currency: str, sf: Salesforce):
     """
+    Update current exchange rates for a single currency.
+
     Args:
         base_currency: ISO code of the base currency
         target_currency: ISO code of the target currency
@@ -103,4 +105,4 @@ if __name__ == '__main__':
     target_currency = 'EUR'
 
     sf = initialize_salesforce_api_client()
-    update_current_rates(base_currency, target_currency, sf)
+    update_current_rate(base_currency, target_currency, sf)
