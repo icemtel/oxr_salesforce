@@ -101,7 +101,6 @@ def update_current_rates(base_currency: str, target_currency: str, sf: Salesforc
 if __name__ == '__main__':
     base_currency = 'USD'
     target_currency = 'EUR'
-    sandbox = 'dv01'
 
-    sf = initialize_salesforce_api_client(sandbox='dv01')
+    sf = initialize_salesforce_api_client()
     update_current_rates(base_currency, target_currency, sf)
