@@ -6,8 +6,6 @@ The script fetches the latest exchange rates from Open Exchange Rates API and up
 
 ## Environment Variables
 
-The following environment variables are required:
-
 - `OXR_APP_ID`: Open Exchange Rates API key
 - `SALESFORCE_EMAIL`: Salesforce email
 - `SALESFORCE_PASSWORD`:Salesforce password
@@ -16,9 +14,11 @@ The following environment variables are required:
 
 ## Usage
 
-To run the script manually:
+After installing the dependencies and populating env variables, either run the script manually
 
-```bash
+```
 python update_exchange_rates.py
 ```
+
+or use the Github Action.
 
