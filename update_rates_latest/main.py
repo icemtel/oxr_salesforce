@@ -1,10 +1,8 @@
-"""
-Update the latest currency exchange rate in a Salesforce org.
-"""
+import os
 from datetime import date
-from sf import initialize_salesforce_api_client, Salesforce
-from oxr import get_exchange_rate_latest
-from log import setup_logging
+from oxr_salesforce.salesforce import initialize_salesforce_api_client, Salesforce
+from oxr_salesforce.oxr import get_exchange_rate_latest
+from oxr_salesforce.setup_logging import setup_logging
 
 # Setup logger
 logger = setup_logging()
