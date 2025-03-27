@@ -4,4 +4,4 @@ WORKDIR /action
 # Copy all repository files into the container
 COPY . .
 # Install dependencies & the package
-RUN pip install --no-cache-dir -r requirements.txt -e .
+RUN pip install -e .
