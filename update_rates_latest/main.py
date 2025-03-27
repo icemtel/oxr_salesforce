@@ -28,7 +28,7 @@ def get_salesforce_currencies(sf: Salesforce):
     query = f"""
     SELECT Id, IsoCode, ConversionRate, IsCorporate
     FROM CurrencyType
-    WHERE IsActive
+    WHERE IsActive=True
     """
     try:
         query_response = sf.query(query)
