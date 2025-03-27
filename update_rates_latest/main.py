@@ -18,6 +18,8 @@ def _find_dict(list_of_dicts, key, value):
 
 def get_salesforce_currencies(sf: Salesforce):
     """
+    Fetch CurrencyType records from Salesforce.
+    Skips currencies that are labeled inactive (IsActive=False).
     Returns:
         str: ISO code of the corporate currency
         list: list of dicts (keys: Salesforce field names, values - field values from Salesforce)
@@ -26,6 +28,7 @@ def get_salesforce_currencies(sf: Salesforce):
     query = f"""
     SELECT Id, IsoCode, ConversionRate, IsCorporate
     FROM CurrencyType
+    WHERE IsActive
     """
     try:
         query_response = sf.query(query)
