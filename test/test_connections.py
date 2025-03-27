@@ -9,6 +9,8 @@ def test_oxr_connection():
 
 
 def test_salesforce_connection():
+    import os
+    from simple_salesforce import Salesforce
     # Test that we can connect to Salesforce
     username = os.environ.get('SALESFORCE_EMAIL')
     security_token = os.environ.get('SALESFORCE_TOKEN')
