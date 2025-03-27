@@ -1,10 +1,8 @@
-"""
-Update the latest currency exchange rate in a Salesforce org.
-"""
+import os
 from datetime import date
-from sf import initialize_salesforce_api_client, Salesforce
-from oxr import get_exchange_rate_latest
-from log import setup_logging
+from oxr_salesforce.salesforce import initialize_salesforce_api_client, Salesforce
+from oxr_salesforce.oxr import get_exchange_rate_latest
+from oxr_salesforce.setup_logging import setup_logging
 
 # Setup logger
 logger = setup_logging()
@@ -20,6 +18,8 @@ def _find_dict(list_of_dicts, key, value):
 
 def get_salesforce_currencies(sf: Salesforce):
     """
+    Fetch CurrencyType records from Salesforce.
+    Skips currencies that are labeled inactive (IsActive=False).
     Returns:
         str: ISO code of the corporate currency
         list: list of dicts (keys: Salesforce field names, values - field values from Salesforce)
@@ -28,6 +28,7 @@ def get_salesforce_currencies(sf: Salesforce):
     query = f"""
     SELECT Id, IsoCode, ConversionRate, IsCorporate
     FROM CurrencyType
+    WHERE IsActive=True
     """
     try:
         query_response = sf.query(query)

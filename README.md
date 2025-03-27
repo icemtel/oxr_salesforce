@@ -7,17 +7,35 @@ The script fetches the latest exchange rates from Open Exchange Rates API and up
 ## Environment Variables
 
 - `OXR_APP_ID`: Open Exchange Rates API key
-- `SALESFORCE_EMAIL`: Salesforce email
+- `SALESFORCE_EMAIL`: Salesforce username/email
 - `SALESFORCE_PASSWORD`:Salesforce password
 - `SALESFORCE_TOKEN`: Salesforce security token
-- `SALESFORCE_SANDBOX`: Sandbox name, optional.
+- `SALESFORCE_DOMAIN`: Optional: 'test' for a sandbox, or a custom domain.
+
+
+## Github Actions
+
 
 ## Usage
 
-After installing the dependencies and populating env variables, either run the script manually
+Example Github workflow that you can add to your repo 
 
 ```
-python update_exchange_rates.py
-```
+name: "Update Currency Exchange Rates"
+on:
+  workflow_dispatch:
 
-or use the Github Action.
+jobs:
+  main:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Update Currency Exchange Rates
+      uses: icemtel/oxr_salesforce/update_rates_latest@v0.5.0
+      with:
+        OXR_APP_ID: ${{ secrets.OXR_APP_ID }}
+        SALESFORCE_EMAIL: ${{ secrets.SALESFORCE_EMAIL }}
+        SALESFORCE_PASSWORD: ${{ secrets.SALESFORCE_PASSWORD }}
+        SALESFORCE_TOKEN: ${{ secrets.SALESFORCE_TOKEN }}
+        SALESFORCE_DOMAIN: ${{ secrets.SALESFORCE_SANDBOX }}
+```
