@@ -20,6 +20,9 @@ inputs:
 
 runs:
   using: "composite"
+  defaults:
+    run:
+      shell: bash
   steps:
     - name: Get Python version from runtime.txt
       id: get_python_version
