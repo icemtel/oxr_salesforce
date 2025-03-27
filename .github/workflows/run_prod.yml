@@ -35,10 +35,3 @@ jobs:
 
       - name: Update Exchange Rates
         run: python update_rates_latest.py
-
-      - name: Save logs
-        uses: actions/upload-artifact@v4
-        with:
-          path: "logs/*"
-          overwrite: true
-          retention-days: 30
