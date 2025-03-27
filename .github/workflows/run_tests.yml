@@ -7,10 +7,11 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
+      OXR_APP_ID: ${{ secrets.OXR_APP_ID }}
       SALESFORCE_EMAIL: ${{ secrets.SALESFORCE_EMAIL }}
       SALESFORCE_PASSWORD: ${{ secrets.SALESFORCE_PASSWORD }}
       SALESFORCE_TOKEN: ${{ secrets.SALESFORCE_TOKEN }}
-      OXR_APP_ID: ${{ secrets.OXR_APP_ID }}
+      SALESFORCE_SANDBOX: ${{ secrets.SALESFORCE_SANDBOX }}
 
     steps:
       - name: Checkout the repository

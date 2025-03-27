@@ -22,8 +22,8 @@ runs:
   using: "docker"
   image: "dockerfile"
   env:
+    OXR_APP_ID: ${{ inputs.OXR_APP_ID }}
     SALESFORCE_EMAIL: ${{ inputs.SALESFORCE_EMAIL }}
     SALESFORCE_PASSWORD: ${{ inputs.SALESFORCE_PASSWORD }}
     SALESFORCE_TOKEN: ${{ inputs.SALESFORCE_TOKEN }}
-    OXR_APP_ID: ${{ inputs.OXR_APP_ID }}
     SALESFORCE_SANDBOX: ${{ inputs.SALESFORCE_SANDBOX }}
