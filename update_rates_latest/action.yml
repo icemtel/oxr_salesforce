@@ -20,9 +20,6 @@ inputs:
 
 runs:
   using: "composite"
-  defaults:
-    run:
-      shell: bash
   steps:
     - name: Get Python version from runtime.txt
       id: get_python_version
@@ -30,6 +27,7 @@ runs:
         # Remove a "python-" prefix if present and output the version
         PYTHON_VERSION=$(sed 's/python-//' runtime.txt)
         echo "python_version=$PYTHON_VERSION" >> $GITHUB_OUTPUT
+      shell: bash
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -38,6 +36,7 @@ runs:
 
     - name: Install dependencies
       run: pip install -r requirements.txt
+      shell: bash
 
     - name: Run update_exchange_rates.py
       env:
@@ -47,3 +46,4 @@ runs:
         OXR_APP_ID: ${{ inputs.OXR_APP_ID }}
         SALESFORCE_SANDBOX: ${{ inputs.SALESFORCE_SANDBOX }}
       run: python update_rates_latest.py
+      shell: bash
