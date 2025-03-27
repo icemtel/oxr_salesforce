@@ -9,10 +9,13 @@ def test_oxr_connection():
 
 
 def test_salesforce_connection():
-    from sf import initialize_salesforce_api_client
-
     # Test that we can connect to Salesforce
-    sf = initialize_salesforce_api_client()
+    username = os.environ.get('SALESFORCE_EMAIL')
+    security_token = os.environ.get('SALESFORCE_TOKEN')
+    password = os.environ.get('SALESFORCE_PASSWORD')
+    domain = os.environ.get('SALESFORCE_DOMAIN')
+    sf = Salesforce(username=username, password=password, security_token=security_token, domain=domain)
+
 
     # Simple query to verify connection
     query = """
