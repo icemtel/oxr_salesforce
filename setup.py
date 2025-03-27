@@ -7,7 +7,5 @@ with open('requirements.txt') as f:
 setup(
     name="oxr_salesforce",
     packages=find_packages(),
-    use_scm_version=True,
-    setup_requires=["setuptools_scm"],
     install_requires=requirements
 )
