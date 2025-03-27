@@ -15,35 +15,15 @@ inputs:
     description: "Open Exchange Rates API key"
     required: true
   SALESFORCE_SANDBOX:
-    description: "Salesforce sandbox name - optional"
+    description: "Salesforce sandbox name (optional)"
     required: false
 
 runs:
-  using: "composite"
-  steps:
-    - name: Get Python version from runtime.txt
-      id: get_python_version
-      run: |
-        # Remove a "python-" prefix if present and output the version
-        PYTHON_VERSION=$(sed 's/python-//' runtime.txt)
-        echo "python_version=$PYTHON_VERSION" >> $GITHUB_OUTPUT
-      shell: bash
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ steps.get_python_version.outputs.python_version }}
-
-    - name: Install dependencies
-      run: pip install -r requirements.txt
-      shell: bash
-
-    - name: Run update_exchange_rates.py
-      env:
-        SALESFORCE_EMAIL: ${{ inputs.SALESFORCE_EMAIL }}
-        SALESFORCE_PASSWORD: ${{ inputs.SALESFORCE_PASSWORD }}
-        SALESFORCE_TOKEN: ${{ inputs.SALESFORCE_TOKEN }}
-        OXR_APP_ID: ${{ inputs.OXR_APP_ID }}
-        SALESFORCE_SANDBOX: ${{ inputs.SALESFORCE_SANDBOX }}
-      run: python update_rates_latest.py
-      shell: bash
+  using: "docker"
+  image: "Dockerfile"
+  env:
+    SALESFORCE_EMAIL: ${{ inputs.SALESFORCE_EMAIL }}
+    SALESFORCE_PASSWORD: ${{ inputs.SALESFORCE_PASSWORD }}
+    SALESFORCE_TOKEN: ${{ inputs.SALESFORCE_TOKEN }}
+    OXR_APP_ID: ${{ inputs.OXR_APP_ID }}
+    SALESFORCE_SANDBOX: ${{ inputs.SALESFORCE_SANDBOX }}
