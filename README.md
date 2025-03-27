@@ -12,6 +12,10 @@ The script fetches the latest exchange rates from Open Exchange Rates API and up
 - `SALESFORCE_TOKEN`: Salesforce security token
 - `SALESFORCE_DOMAIN`: Optional: 'test' for a sandbox, or a custom domain.
 
+
+## Github Actions
+
+
 ## Usage
 
 Example Github workflow that you can add to your repo 
@@ -22,8 +26,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  update_rates:
-    environment: prod
+  main:
     runs-on: ubuntu-latest
 
     steps:

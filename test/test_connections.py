@@ -1,7 +1,5 @@
-import pytest
-
 def test_oxr_connection():
-    from oxr import get_exchange_rate_latest
+    from oxr_salesforce.oxr import get_exchange_rate_latest
 
     # Test that we can fetch exchange rates from the API
     rate = get_exchange_rate_latest('USD', 'EUR')
