@@ -6,7 +6,6 @@ on:
 
 jobs:
   run_tests:
-    environment: prod
     runs-on: ubuntu-latest
 
     env:
