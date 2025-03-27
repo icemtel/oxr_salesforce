@@ -20,7 +20,7 @@ inputs:
 
 runs:
   using: "docker"
-  image: "Dockerfile"
+  image: "dockerfile"
   env:
     SALESFORCE_EMAIL: ${{ inputs.SALESFORCE_EMAIL }}
     SALESFORCE_PASSWORD: ${{ inputs.SALESFORCE_PASSWORD }}
