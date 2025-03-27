@@ -1,7 +1,10 @@
-name: "Update Salesforce Currencies Action"
-description: "A composite GitHub Action that fetches the latest exchange rates from Open Exchange Rates API and updates Salesforce."
+name: "update_rates_latest"
+description: "Fetch the latest exchange rates from Open Exchange Rates API and update Salesforce currencies."
 
 inputs:
+  OXR_APP_ID:
+    description: "Open Exchange Rates API key"
+    required: true
   SALESFORCE_EMAIL:
     description: "Salesforce email address"
     required: true
@@ -11,11 +14,8 @@ inputs:
   SALESFORCE_TOKEN:
     description: "Salesforce security token"
     required: true
-  OXR_APP_ID:
-    description: "Open Exchange Rates API key"
-    required: true
-  SALESFORCE_SANDBOX:
-    description: "Salesforce sandbox name (optional)"
+  SALESFORCE_DOMAIN:
+    description: "Optional: 'test' for a sandbox, or a custom domain."
     required: false
 
 runs:
@@ -26,7 +26,7 @@ runs:
     SALESFORCE_EMAIL: ${{ inputs.SALESFORCE_EMAIL }}
     SALESFORCE_PASSWORD: ${{ inputs.SALESFORCE_PASSWORD }}
     SALESFORCE_TOKEN: ${{ inputs.SALESFORCE_TOKEN }}
-    SALESFORCE_SANDBOX: ${{ inputs.SALESFORCE_SANDBOX }}
+    SALESFORCE_DOMAIN: ${{ inputs.SALESFORCE_DOMAIN }}
   args:
     - "python"
     - "update_rates_latest/main.py"
