@@ -21,9 +21,3 @@ python update_exchange_rates.py
 ```
 
 or use the Github Action.
-
-
-## TODOs
-
-- support updating multiple currencies in an efficient manner 
-- make it easy to set the list of currencies & schedule
