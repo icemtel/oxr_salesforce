@@ -1,10 +1,11 @@
 """
 Update the latest currency exchange rate in a Salesforce org.
 """
+import os
 from datetime import date
-from sf import initialize_salesforce_api_client, Salesforce
+from simple_salesforce import Salesforce
 from oxr import get_exchange_rate_latest
-from log import setup_logging
+from setup_logging import setup_logging
 
 # Setup logger
 logger = setup_logging()
@@ -184,5 +185,9 @@ def update_current_rates(sf: Salesforce):
 
 
 if __name__ == '__main__':
-    sf = initialize_salesforce_api_client()
+    username = os.environ.get('SALESFORCE_EMAIL')
+    security_token = os.environ.get('SALESFORCE_TOKEN')
+    password = os.environ.get('SALESFORCE_PASSWORD')
+    domain = os.environ.get('SALESFORCE_DOMAIN')
+    sf = Salesforce(username=username, password=password, security_token=security_token, domain=domain)
     update_current_rates(sf)
