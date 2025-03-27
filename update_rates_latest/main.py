@@ -52,7 +52,7 @@ def get_salesforce_currencies(sf: Salesforce):
     return base_currency, target_currencies_data
 
 
-def get_salesforce_dated_conversion_rates(d: date, sf: Salesforce):
+def get_salesforce_dated_conversion_rates(d: date | str, sf: Salesforce):
     query = f"SELECT Id, IsoCode FROM DatedConversionRate WHERE StartDate = {d}"
 
     try:
@@ -62,17 +62,13 @@ def get_salesforce_dated_conversion_rates(d: date, sf: Salesforce):
         logger.error(f"Failed to fetch dated conversion rates from Salesforce for date {d}.")
         raise e
 
-    return records
+    return records  # list of SF records (each is an OrderedDict)
 
 
 def update_current_rates(sf: Salesforce):
     """
-    Update current exchange rates for a single currency.
-
-    Args:
-        base_currency: ISO code of the base currency. Must be the corporate currency of the Salesforce org.
-        target_currencies: list of ISO code of the target currency
-        sf: Salesforce client from the `simple_salesforce` package
+    Fetch the latest exchange rates from Open Exchange Rates API and update
+    both the `CurrencyType` and `DatedConversionRate` objects for each active currency in Salesforce.
     """
     # Validate currencies in Salesforce and get currency data
     base_currency, target_currencies_existing_records = get_salesforce_currencies(sf)
@@ -81,8 +77,8 @@ def update_current_rates(sf: Salesforce):
     currency_types_to_update = []  # list of dicts
     rates = {}  # keys: currency iso codes; we'll need this dictionary later
     for rec in target_currencies_existing_records:
+        target_currency = rec['IsoCode']
         try:
-            target_currency = rec['IsoCode']
             rate = get_exchange_rate_latest(base_currency, target_currency)
 
             currency_types_to_update.append(
@@ -126,20 +122,16 @@ def update_current_rates(sf: Salesforce):
     records_to_update = []
     records_to_create = []
 
-    # Get the IsoCode for each record from the target_currencies_existing_records
     for target_currency, rate in rates.items():
-        # Find if there's an existing dated conversion rate record with the same ISO code
         existing_record = _find_dict(existing_dated_conversion_rates, 'IsoCode', target_currency)
 
         if existing_record:
-            # If exists, prepare for update with the existing ID
             update_record = {
                 'Id': existing_record['Id'],
                 'ConversionRate': rate
             }
             records_to_update.append(update_record)
         else:
-            # If doesn't exist, prepare for creation
             create_record = {
                 'IsoCode': target_currency,
                 'ConversionRate': rate,

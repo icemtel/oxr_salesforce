@@ -9,7 +9,7 @@ URL_LATEST = 'http://openexchangerates.org/api/latest.json'
 URL_HISTORICAL = 'http://openexchangerates.org/api/historical/{0}.json'
 
 
-def get_exchange_rate_latest(base_currency: str, target_currency: str, api_key=OXR_APP_ID):
+def get_exchange_rate_latest(base_currency: str, target_currency: str, api_key=OXR_APP_ID) -> Decimal:
     """
     Fetches the latest exchange rate between two currencies.
     """
@@ -22,7 +22,8 @@ def get_exchange_rate_latest(base_currency: str, target_currency: str, api_key=O
     return rate
 
 
-def get_exchange_rate_historical(base_currency: str, target_currency: str, d: date | str, api_key=OXR_APP_ID):
+def get_exchange_rate_historical(base_currency: str, target_currency: str, d: date | str,
+                                 api_key=OXR_APP_ID) -> Decimal:
     """
     Fetches the exchange rate for a specific date.
     """
