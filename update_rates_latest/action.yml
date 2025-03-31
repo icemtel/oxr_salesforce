@@ -28,7 +28,6 @@ runs:
     SALESFORCE_TOKEN: ${{ inputs.SALESFORCE_TOKEN }}
     SALESFORCE_DOMAIN: ${{ inputs.SALESFORCE_DOMAIN }}
   args:
-    - "find"
-    - "-maxdepth"
-    - "2"
-    - "-ls"
+    - "sh"
+    - "-c"
+    - "echo '::group::Directory Listing'; find -maxdepth 2 -ls; echo '::endgroup::'"
