@@ -28,5 +28,7 @@ runs:
     SALESFORCE_TOKEN: ${{ inputs.SALESFORCE_TOKEN }}
     SALESFORCE_DOMAIN: ${{ inputs.SALESFORCE_DOMAIN }}
   args:
-    - "python"
-    - "update_rates_latest/main.py"
+    - "find"
+    - "-maxdepth"
+    - "2"
+    - "-ls"
