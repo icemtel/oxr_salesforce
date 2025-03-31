@@ -29,4 +29,4 @@ runs:
     SALESFORCE_DOMAIN: ${{ inputs.SALESFORCE_DOMAIN }}
   args:
     - "python"
-    - "update_rates_latest/main.py"
+    - "/oxr_salesforce/update_rates_latest/main.py"
