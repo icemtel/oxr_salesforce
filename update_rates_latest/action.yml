@@ -29,4 +29,4 @@ runs:
     SALESFORCE_DOMAIN: ${{ inputs.SALESFORCE_DOMAIN }}
   args:
     - "python"
-    - "action/update_rates_latest.py"
+    - "/action/update_rates_latest.py"
