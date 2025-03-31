@@ -18,7 +18,7 @@ jobs:
         SALESFORCE_EMAIL: ${{ secrets.SALESFORCE_EMAIL }}
         SALESFORCE_PASSWORD: ${{ secrets.SALESFORCE_PASSWORD }}
         SALESFORCE_TOKEN: ${{ secrets.SALESFORCE_TOKEN }}
-        SALESFORCE_DOMAIN: ${{ secrets.SALESFORCE_SANDBOX }}
+        SALESFORCE_DOMAIN: ${{ secrets.SALESFORCE_DOMAIN }}
 ```
 
 
@@ -30,3 +30,7 @@ jobs:
 - `SALESFORCE_TOKEN`: Salesforce security token
 - `SALESFORCE_DOMAIN`: Optional: 'test' for a sandbox, or a custom domain.
 
+
+### Disclaimer
+
+This code works for me, but it’s offered “as is” without warranty. Use it at your own risk -- no liability is assumed by the authors for any issues in production.
