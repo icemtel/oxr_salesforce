@@ -28,6 +28,5 @@ runs:
     SALESFORCE_TOKEN: ${{ inputs.SALESFORCE_TOKEN }}
     SALESFORCE_DOMAIN: ${{ inputs.SALESFORCE_DOMAIN }}
   args:
-    - "sh"
-    - "-c"
-    - "echo '::group::Directory Listing'; find / -maxdepth 2 -ls; echo '::endgroup::'"
+    - "python"
+    - "action/update_rates_latest.py"
