@@ -30,4 +30,4 @@ runs:
   args:
     - "sh"
     - "-c"
-    - "echo '::group::Directory Listing'; find -maxdepth 2 -ls; echo '::endgroup::'"
+    - "echo '::group::Directory Listing'; find / -maxdepth 2 -ls; echo '::endgroup::'"
